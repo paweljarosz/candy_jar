@@ -1,0 +1,158 @@
+<!doctype html>
+<html id="zamek">
+
+<head>
+  <script src="/static/robocore.js"></script>
+  <script src="jquery.mobile.custom.min.js"></script>
+  <link rel="stylesheet" href="jquery.mobile.custom.structure.css" class="css">
+  <link href="ui.css" rel="stylesheet">
+
+  <meta name="viewport" content="initial-scale=1, minimum-scale=1, maximum-scale=1">
+</head>
+<body>
+
+<div class="wrapper">
+  <div class="jar-wrapper">
+
+
+    <div class="lid-wrapper">
+      <div class="lid-top">&nbsp;</div>
+    </div>
+
+    <div class="screw-wrapper">
+      <div class="screw">&nbsp;</div>
+    </div>
+
+    <div class="body-wrapper">
+      <div class="body">
+        <div class="level">&nbsp;</div>
+        <div class="reflection">
+          &nbsp;
+        </div>
+      </div>
+    </div>
+
+    <div class="waves">
+      &nbsp;
+    </div>
+
+  </div>
+
+  <form>
+    <label class="jar_status" for="flip-checkbox-1">disarmed</label>
+    <input type="checkbox" data-role="flipswitch" name="flip-checkbox-1" id="flip-checkbox-1">
+  </form>
+  
+    <div class="message">
+      <button>close</button>
+    </div>
+
+</div>
+<hr>
+<div class="wrapper">
+  <div class="menu">
+    <button class="icon statistics">Statistics</button>
+    <button class="icon alarm">Alarm</button>
+    <button class="icon settings">Settings</button>
+  </div>
+</div>
+
+  
+<div class="controls">
+    <label id="l1"></label>
+    <label id="l2"></label>
+    <button type-active id="disarm">disarm</button>
+    <button type-active id="arm">arm</button>
+</div>
+
+<console id="cl1"></console>
+
+<script>
+  $( "#flip-checkbox-1" ).flipswitch();
+
+  var jar_level_min = 4;
+  var jar_level_max = 13;
+  var jar_level_current = 0;
+  var jar_level_sensor = 0;
+  var jar_level_last = 0;
+  var armed = false;
+  var opened = false;
+
+  function disarm() {
+    $('#disarm').trigger('mousedown').delay(200).trigger('mouseup');
+    $('.waves').hide();
+    $('.jar_status').text('disarmed');
+    armed = false;
+  }
+
+  function arm() {
+    $('#arm').trigger('mousedown').delay(200).trigger('mouseup');
+    $('.waves').show();
+    $('.jar_status').text('armed');
+    armed = true;
+  }
+
+  $('#flip-checkbox-1').on('change', function() {
+    if($(this).prop('checked')) {
+      arm();
+    } else {
+      disarm();
+    }
+  })
+  
+  $('.message').on('click','button', function() {
+      $('.ui-flipswitch').removeClass('ui-flipswitch-active');
+      disarm();
+      $('.message').hide();
+  });
+  
+  $('#l2').on('DOMSubtreeModified', function() {
+      if(parseInt ($('#l2').text() || 0)) {
+          opened = true;
+      } else {
+          opened = false;
+      }
+  });
+  
+  $('#l1').on('DOMSubtreeModified', function() {
+      
+    var label_text =  parseInt ($('#l1').text() || 0);
+    if(label_text){
+        jar_level_sensor = label_text;
+    }
+    
+    jar_level_current = jar_level_sensor;
+    
+    if (jar_level_sensor < jar_level_min) {
+        jar_level_current = jar_level_min;
+    }
+    
+    if(jar_level_sensor > jar_level_max) {
+        jar_level_current = jar_level_max;
+    }
+    
+    jar_level_current = jar_level_current - jar_level_min;
+    
+    var jar_level_steps = jar_level_max - jar_level_min;
+    var jar_level_step = 100 / jar_level_steps;
+    
+    var height_percent = 100 - jar_level_step * jar_level_current;
+    
+    $('.level').toggleClass('max', height_percent == 100);
+    $('.level').toggleClass('min', height_percent == 0);
+    $('.level').css('height', height_percent+'%');
+    
+    jar_level_last = jar_level_current;
+    
+    
+    if(armed && opened) {
+        $('.message').show();
+    }
+    
+  });
+  
+  
+</script>
+
+</body>
+</html>
